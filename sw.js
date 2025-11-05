@@ -1,11 +1,11 @@
-// sw.js — Versão final PWA "Solicitação de Reembolso - Sem Fronteiras"
-const CACHE_NAME = "reembolso-sf-v7";
+// sw.js — Versão CORRIGIDA para iPhone/GitHub Pages
+const CACHE_NAME = "reembolso-sf-v8";
 const FILES_TO_CACHE = [
-  "/reembolso_SF/",
-  "/reembolso_SF/index.html",
-  "/reembolso_SF/manifest.json",
-  "/reembolso_SF/icon-192x192.png",
-  "/reembolso_SF/icon-512x512.png",
+  "./",                    // ✅ Caminho relativo
+  "./index.html",          // ✅ Caminho relativo
+  "./manifest.json",       // ✅ Caminho relativo
+  "./icon-192x192.png",    // ✅ Caminho relativo
+  "./icon-512x512.png",    // ✅ Caminho relativo
   "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
   "https://i.imgur.com/dvzRyus.png"
@@ -15,7 +15,9 @@ const FILES_TO_CACHE = [
 self.addEventListener("install", event => {
   console.log("📦 Instalando Service Worker...");
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(FILES_TO_CACHE))
+      .catch(err => console.log("❌ Erro no cache:", err))
   );
   self.skipWaiting();
 });
@@ -41,16 +43,20 @@ self.addEventListener("fetch", event => {
     caches.match(event.request).then(cached => {
       const fetchPromise = fetch(event.request)
         .then(response => {
-          if (response && response.status === 200) {
-            caches.open(CACHE_NAME).then(cache =>
-              cache.put(event.request, response.clone())
-            );
+          // Só cachear se for uma resposta válida e do mesmo origin
+          if (response && response.status === 200 && response.url.startsWith(self.location.origin)) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
+            });
           }
           return response;
         })
-        .catch(() => cached || caches.match("/reembolso_SF/index.html"));
+        .catch(() => cached || caches.match("./index.html")); // ✅ Fallback correto
 
-      if (event.request.destination === "document") {
+      // Para páginas HTML, priorizar network
+      if (event.request.destination === "document" || 
+          event.request.headers.get('accept').includes('text/html')) {
         return fetchPromise;
       }
 
