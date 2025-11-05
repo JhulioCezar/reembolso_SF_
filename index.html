@@ -86,7 +86,7 @@ th{font-weight:700;border-bottom:2px solid var(--blue)}
 </style>
   
 <!-- 🔹 Configurações PWA -->
-<link rel="manifest" href="/reembolso_SF/manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#004aad">
 
 <!-- Para Android -->
@@ -96,11 +96,11 @@ th{font-weight:700;border-bottom:2px solid var(--blue)}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Reembolso SF">
-<link rel="apple-touch-icon" href="/reembolso_SF/icon-512x512.png">
+<link rel="apple-touch-icon" href="icon-512x512.png">
 
 <!-- Ícones padrão -->
-<link rel="icon" type="image/png" sizes="192x192" href="/reembolso_SF/icon-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="/reembolso_SF/icon-512x512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512x512.png">
 
 <!-- Evitar cache agressivo -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -688,7 +688,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // Service Worker com atualizações
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/reembolso_SF/sw.js')
+    navigator.serviceWorker.register('./sw.js')
       .then(registration => {
         console.log('✅ SW registrado:', registration.scope);
 
@@ -762,3 +762,4 @@ window.addEventListener('appinstalled', () => {
 </script>
 </body>
 </html>
+
