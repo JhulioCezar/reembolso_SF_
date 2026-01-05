@@ -152,7 +152,7 @@ th{font-weight:700;border-bottom:2px solid var(--blue)}
 
     <div class="comprovante-container">
       <div class="comprovante-actions">
-        <strong>Comprovantes:</strong>
+        <strong>Comprovantes (opcional):</strong>
         <button class="anexo-btn" onclick="inserirComprovante()">Inserir Comprovante(s)</button>
       </div>
       <div id="lista-comprovantes"></div>
@@ -183,7 +183,7 @@ th{font-weight:700;border-bottom:2px solid var(--blue)}
 
   <div id="comprovante-modal-overlay" class="modal-overlay" onclick="fecharModalComprovante()"></div>
   <div id="comprovante-modal" class="modal" role="dialog" aria-modal="true">
-    <p>Adicionar comprovante</p>
+    <p>Adicionar comprovante (opcional)</p>
     <button type="button" onclick="escolherOpcaoComprovante('camera')">📷 Abrir Câmera</button>
     <button type="button" onclick="escolherOpcaoComprovante('arquivo')">📁 Procurar Arquivos</button>
     <button type="button" class="btn-danger" onclick="fecharModalComprovante()">Cancelar</button>
@@ -459,7 +459,7 @@ function validarChavePixFormato(tipo, chave){
   return chave.length > 0;
 }
 
-/* ===== Validar formulário (antes de gerar PDF) ===== */
+/* ===== Validar formulário (antes de gerar PDF) - REMOVIDA VALIDAÇÃO DE COMPROVANTE OBRIGATÓRIO ===== */
 function validarFormulario(){
   const faltando = [];
 
@@ -509,8 +509,9 @@ function validarFormulario(){
     }
   });
   if(!temDespesa) faltando.push("Ao menos uma despesa preenchida");
-  // comprovantes
-  if(comprovantes.length === 0) faltando.push("Pelo menos um comprovante anexado");
+  
+  // REMOVIDO: Validação de comprovante obrigatório
+  // if(comprovantes.length === 0) faltando.push("Pelo menos um comprovante anexado");
 
   if(faltando.length > 0){
     alert("⚠️ Antes de gerar o PDF, corrija os seguintes pontos:\n\n• " + faltando.join("\n• "));
@@ -633,20 +634,22 @@ async function gerarPDF(){
       pdf.setFont(undefined,'bold'); pdf.text(supervisorNome || 'Assinatura do Supervisor', pageWidth/2, y+48, {align:'center'});
     }
 
-    // Comprovantes: cada um em nova página
-    for(let i=0;i<comprovantes.length;i++){
-      const comp = comprovantes[i];
-      try{
-        pdf.addPage();
-        const inner = 15; pdf.setFontSize(12); pdf.text(`Comprovante ${i+1}`, pageWidth/2, inner, {align:'center'});
-        const props = pdf.getImageProperties(comp.src);
-        const maxW = pdf.internal.pageSize.getWidth() - inner*2;
-        const maxH = pdf.internal.pageSize.getHeight() - inner*2 - 20;
-        const ratio = Math.min(maxW/props.width, maxH/props.height);
-        const w = props.width * ratio; const h = props.height * ratio;
-        const x = (pdf.internal.pageSize.getWidth() - w)/2; const yImg = (pdf.internal.pageSize.getHeight() - h)/2 + 10;
-        pdf.addImage(comp.src,'PNG',x,yImg,w,h);
-      } catch(e){ console.warn('Erro ao adicionar comprovante ao PDF', e); }
+    // Comprovantes: cada um em nova página (se houver)
+    if(comprovantes.length > 0){
+      for(let i=0;i<comprovantes.length;i++){
+        const comp = comprovantes[i];
+        try{
+          pdf.addPage();
+          const inner = 15; pdf.setFontSize(12); pdf.text(`Comprovante ${i+1}`, pageWidth/2, inner, {align:'center'});
+          const props = pdf.getImageProperties(comp.src);
+          const maxW = pdf.internal.pageSize.getWidth() - inner*2;
+          const maxH = pdf.internal.pageSize.getHeight() - inner*2 - 20;
+          const ratio = Math.min(maxW/props.width, maxH/props.height);
+          const w = props.width * ratio; const h = props.height * ratio;
+          const x = (pdf.internal.pageSize.getWidth() - w)/2; const yImg = (pdf.internal.pageSize.getHeight() - h)/2 + 10;
+          pdf.addImage(comp.src,'PNG',x,yImg,w,h);
+        } catch(e){ console.warn('Erro ao adicionar comprovante ao PDF', e); }
+      }
     }
 
     const fileName = `reembolso_${(nome||'sem_nome').replace(/\s+/g,'_')}.pdf`;
@@ -762,4 +765,3 @@ window.addEventListener('appinstalled', () => {
 </script>
 </body>
 </html>
-
